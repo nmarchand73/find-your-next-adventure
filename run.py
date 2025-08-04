@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-Find Your Next Adventure - Simple PDF to JSON Parser
-====================================================
+Find Your Next Adventure - PDF to JSON Parser
+=============================================
 
 A simple tool to extract adventure destinations from PDF files and convert them to JSON format.
 
 Usage:
-    python main.py [pdf_file] [output_directory]
-
-Examples:
-    python main.py "FindYourNextAdventure.pdf" "./output/"
-    python main.py "my_adventure_guide.pdf" "/tmp/results/"
+    # Parse your own PDF
+    python run.py "my_adventure_guide.pdf" "./output/"
+    
+    # Run with sample PDF (no arguments)
+    python run.py
 """
 
 import sys
@@ -19,17 +19,26 @@ from pathlib import Path
 from find_your_next_adventure.parsers.adventure_guide_parser import AdventureGuideParser
 
 def main():
-    """Simple main function for parsing PDF adventure guides."""
+    """Main function for parsing PDF adventure guides."""
     
-    # Get command line arguments
-    if len(sys.argv) != 3:
+    # Check if arguments provided
+    if len(sys.argv) == 3:
+        # Command line mode: parse user's PDF
+        pdf_file = Path(sys.argv[1])
+        output_dir = Path(sys.argv[2])
+        mode = "custom"
+    elif len(sys.argv) == 1:
+        # Example mode: use sample PDF
+        pdf_file = Path("FindYourNextAdventure.pdf")
+        output_dir = Path("output")
+        mode = "example"
+    else:
         print(__doc__)
-        print("\nError: Please provide PDF file and output directory.")
-        print("Example: python main.py 'adventure.pdf' './output/'")
+        print("\nError: Please provide PDF file and output directory, or run without arguments for example.")
+        print("Examples:")
+        print("  python run.py 'my_guide.pdf' './output/'")
+        print("  python run.py")
         sys.exit(1)
-    
-    pdf_file = Path(sys.argv[1])
-    output_dir = Path(sys.argv[2])
     
     # Validate inputs
     if not pdf_file.exists():
@@ -43,7 +52,12 @@ def main():
     # Create output directory
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    print("🚀 Find Your Next Adventure - PDF Parser")
+    # Show mode
+    if mode == "example":
+        print("🔍 Example Mode: Using sample PDF")
+    else:
+        print("🚀 Custom Mode: Parsing your PDF")
+    
     print("=" * 50)
     print(f"📄 PDF file: {pdf_file}")
     print(f"📁 Output directory: {output_dir}")

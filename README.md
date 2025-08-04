@@ -10,14 +10,11 @@ A simple Python tool to extract adventure destinations from PDF travel guides an
 
 ### Simple Usage
 ```bash
-# Parse a PDF and generate JSON files
-python main.py "FindYourNextAdventure.pdf" "./output/"
-```
+# Parse your own PDF
+python run.py "my_adventure_guide.pdf" "./output/"
 
-### Example Script
-```bash
-# Run the example to see how it works
-python example.py
+# Run with sample PDF (no arguments)
+python run.py
 ```
 
 ### Programmatic Usage
@@ -61,8 +58,7 @@ pip install -e ".[dev]"
 
 ```
 find-your-next-adventure/
-├── main.py                          # Simple command-line interface
-├── example.py                       # Usage example
+├── run.py                           # Single command-line interface
 ├── find_your_next_adventure/        # Main package
 │   ├── models/                      # Data models
 │   ├── parsers/                     # PDF parsing logic
