@@ -17,9 +17,13 @@ import sys
 import json
 from pathlib import Path
 from find_your_next_adventure.parsers.adventure_guide_parser import AdventureGuideParser
+from find_your_next_adventure.utils.logging_config import setup_logging, log_session_start, log_session_end
 
 def main():
     """Main function for parsing PDF adventure guides."""
+    
+    # Set up centralized logging
+    setup_logging()
     
     # Check if arguments provided
     if len(sys.argv) == 3:
@@ -63,6 +67,15 @@ def main():
     print(f"📁 Output directory: {output_dir}")
     print()
     
+    # Log session start
+    session_info = {
+        "Mode": mode,
+        "PDF File": str(pdf_file),
+        "Output Directory": str(output_dir),
+        "Arguments": sys.argv[1:] if len(sys.argv) > 1 else []
+    }
+    log_session_start(session_info)
+    
     try:
         # Initialize parser
         parser = AdventureGuideParser()
@@ -93,8 +106,23 @@ def main():
         
         print(f"\n🎉 All done! Check the '{output_dir}' directory for your JSON files.")
         
+        # Log session end with statistics
+        final_stats = {
+            "Successful destinations": stats['successful'],
+            "Failed parsing attempts": stats['failed'],
+            "Unknown countries": stats['unknown_countries'],
+            "Generated files": len(json_files) if json_files else 0,
+            "Output directory": str(output_dir)
+        }
+        log_session_end(final_stats)
+        
     except Exception as e:
         print(f"❌ Error during parsing: {e}")
+        # Log error and session end
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error during parsing: {e}")
+        log_session_end({"Error": str(e), "Status": "Failed"})
         sys.exit(1)
 
 if __name__ == "__main__":

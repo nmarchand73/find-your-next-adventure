@@ -70,6 +70,32 @@ find-your-next-adventure/
 └── FindYourNextAdventure.pdf        # Sample PDF
 ```
 
+## 📝 Logging
+
+The application uses centralized logging to track all operations. All logs are written to a single file:
+
+- **Log File**: `logs/find_your_next_adventure.log`
+- **Log Level**: INFO (configurable)
+- **Rotation**: Automatic rotation when file reaches 10MB
+- **Backup**: Keeps 5 backup files
+
+### Log Contents
+
+The log file contains:
+- Session start/end information
+- PDF processing progress
+- AI generation calls and responses
+- Error messages and fallbacks
+- Performance statistics
+
+### Example Log Entry
+
+```
+2025-08-04 23:40:37 - find_your_next_adventure.utils.logging_config - INFO - SESSION STARTED
+2025-08-04 23:40:37 - find_your_next_adventure.parsers.adventure_guide_parser - INFO - Processing: FindYourNextAdventure.pdf
+2025-08-04 23:41:19 - find_your_next_adventure.utils.ollama_generator - INFO - [23:41:19] BATCH: 5 locations processed in single prompt
+```
+
 ## 🌍 Output Format
 
 The tool generates JSON files organized by latitude ranges:

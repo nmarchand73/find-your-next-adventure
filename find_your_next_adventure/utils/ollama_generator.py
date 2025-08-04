@@ -31,9 +31,6 @@ class OllamaGenerator:
             'top_p': 0.9,
             'max_tokens': 200  # Increased for bilingual response
         }
-        # Create log file with timestamp
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.log_file = f"ollama_generation_{timestamp}.log"
         self.session_started = False
         self.stats = {
             'total_calls': 0,
@@ -48,17 +45,10 @@ class OllamaGenerator:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             self.stats['start_time'] = datetime.datetime.now()
             
-            session_header = f"""=== OLLAMA SESSION STARTED: {timestamp} ===
-Model: {self.model} | Batch Size: {self.batch_size} | Temp: {self.options.get('temperature', 'N/A')} | Max Tokens: {self.options.get('max_tokens', 'N/A')}
-Log File: {self.log_file}
-"""
+            session_info = f"Ollama session started | Model: {self.model} | Batch Size: {self.batch_size} | Temp: {self.options.get('temperature', 'N/A')} | Max Tokens: {self.options.get('max_tokens', 'N/A')}"
             
-            with open(self.log_file, "a", encoding="utf-8") as f:
-                f.write(session_header)
-                
-            print(f"🚀 Ollama session started | Model: {self.model} | Batch Size: {self.batch_size} | Temp: {self.options.get('temperature', 'N/A')}")
-            print(f"📝 Log file: {self.log_file}")
-            logger.info(f"📋 Session started: {self.model}")
+            print(f"🚀 {session_info}")
+            logger.info(f"📋 {session_info}")
             self.session_started = True
             
         except Exception as e:
@@ -66,7 +56,7 @@ Log File: {self.log_file}
 
     def _append_to_log(self, location: str, prompt: str, response: str, en_result: str, fr_result: str):
         """
-        Append concise Ollama generation details to the log file and display on console.
+        Log Ollama generation details using centralized logging.
         
         Args:
             location: The location being processed
@@ -93,12 +83,8 @@ Log File: {self.log_file}
             print(f"✅ [{timestamp}] {location} | EN: {en_preview}")
             print(f"   📊 Progress: {self.stats['total_calls']} calls | {success_rate:.1f}% success | {elapsed:.1f}s elapsed")
             
-            # Log file entry (concise)
-            log_entry = f"""[{timestamp}] {location} | EN: {en_preview} | FR: {fr_preview}
-"""
-            
-            with open(self.log_file, "a", encoding="utf-8") as f:
-                f.write(log_entry)
+            # Log using centralized logging
+            logger.info(f"[{timestamp}] {location} | EN: {en_preview} | FR: {fr_preview}")
                 
             logger.info(f"✅ {location}: {en_preview}")
             
@@ -107,7 +93,7 @@ Log File: {self.log_file}
 
     def _append_error_to_log(self, location: str, error: Exception, fallback_en: str, fallback_fr: str):
         """
-        Append concise error details to the log file and display on console.
+        Log error details using centralized logging.
         
         Args:
             location: The location being processed
@@ -133,17 +119,11 @@ Log File: {self.log_file}
             print(f"❌ [{timestamp}] {location} | ERROR: {type(error).__name__} | FALLBACK: {en_preview}")
             print(f"   📊 Progress: {self.stats['total_calls']} calls | {success_rate:.1f}% success | {elapsed:.1f}s elapsed")
             
-            # Log file entry (concise)
-            log_entry = f"""[{timestamp}] {location} | ERROR: {type(error).__name__} | FALLBACK EN: {en_preview} | FALLBACK FR: {fr_preview}
-"""
-            
-            with open(self.log_file, "a", encoding="utf-8") as f:
-                f.write(log_entry)
-                
-            logger.warning(f"⚠️  {location}: Error - {type(error).__name__}")
+            # Log using centralized logging
+            logger.warning(f"[{timestamp}] {location} | ERROR: {type(error).__name__} | FALLBACK EN: {en_preview} | FALLBACK FR: {fr_preview}")
             
         except Exception as e:
-            logger.error(f"❌ Failed to append error to log file: {e}")
+            logger.error(f"❌ Failed to log error: {e}")
 
     def get_stats(self) -> dict:
         """
@@ -181,7 +161,6 @@ Log File: {self.log_file}
         print(f"⏱️  Total Time: {stats['elapsed_time']:.1f}s")
         print(f"⚡ Avg Time/Call: {stats['avg_time_per_call']:.2f}s")
         print(f"📦 Batch Size: {self.batch_size}")
-        print(f"📁 Log File: {self.log_file}")
         print("="*60)
 
     def generate_attractions(self, location: str, country: str, region: str) -> Tuple[str, str]:
@@ -364,15 +343,11 @@ Tokyo: English: Experience the blend of ancient temples and cutting-edge technol
             if len(results) > 3:
                 print(f"   ... and {len(results) - 3} more locations")
             
-            # Log file entry
-            log_entry = f"[{timestamp}] BATCH: {len(batch)} locations processed in single prompt\n"
-            with open(self.log_file, "a", encoding="utf-8") as f:
-                f.write(log_entry)
-                
-            logger.info(f"✅ Batch processed: {len(batch)} locations in single prompt")
+            # Log using centralized logging
+            logger.info(f"[{timestamp}] BATCH: {len(batch)} locations processed in single prompt")
             
         except Exception as e:
-            logger.error(f"Failed to append batch to log file: {e}")
+            logger.error(f"Failed to log batch: {e}")
     
     def get_attraction_result(self, location: str) -> Tuple[str, str]:
         """
