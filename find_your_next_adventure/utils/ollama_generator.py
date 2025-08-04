@@ -28,10 +28,43 @@ class OllamaGenerator:
             'max_tokens': 200  # Increased for bilingual response
         }
         self.log_file = "ollama_generation.log"
+        self.session_started = False
+
+    def _create_session_header(self):
+        """Create a session header for the log file."""
+        try:
+            import datetime
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            session_header = f"""
+{'═'*80}
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        OLLAMA GENERATION SESSION                            ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+🚀 SESSION STARTED: {timestamp}
+🤖 MODEL: {self.model}
+📁 LOG FILE: {self.log_file}
+⚙️  TEMPERATURE: {self.options.get('temperature', 'N/A')}
+🎯 TOP_P: {self.options.get('top_p', 'N/A')}
+📏 MAX_TOKENS: {self.options.get('max_tokens', 'N/A')}
+
+{'═'*80}
+
+"""
+            
+            with open(self.log_file, "a", encoding="utf-8") as f:
+                f.write(session_header)
+                
+            logger.info(f"📋 Created session header in {self.log_file}")
+            self.session_started = True
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to create session header: {e}")
 
     def _append_to_log(self, location: str, prompt: str, response: str, en_result: str, fr_result: str):
         """
-        Append the Ollama generation details to the log file.
+        Append the Ollama generation details to the log file with hierarchical structure.
         
         Args:
             location: The location being processed
@@ -45,31 +78,111 @@ class OllamaGenerator:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
             log_entry = f"""
-=== Ollama Generation Log ===
-Timestamp: {timestamp}
-Location: {location}
-Model: {self.model}
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                           OLLAMA GENERATION LOG                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
-PROMPT:
+📅 TIMESTAMP: {timestamp}
+📍 LOCATION: {location}
+🤖 MODEL: {self.model}
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              INPUT PROMPT                                   │
+└──────────────────────────────────────────────────────────────────────────────┘
 {prompt}
 
-RAW RESPONSE:
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                            RAW RESPONSE                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
 {response}
 
-PARSED RESULTS:
-English: {en_result}
-French: {fr_result}
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           PARSED RESULTS                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-{'='*50}
+🇬🇧 ENGLISH:
+{en_result}
+
+🇫🇷 FRENCH:
+{fr_result}
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              SUMMARY                                        │
+└──────────────────────────────────────────────────────────────────────────────┘
+✅ Status: Success
+📊 English Length: {len(en_result)} characters
+📊 French Length: {len(fr_result)} characters
+🎯 Location: {location}
+
+{'═'*80}
 """
             
             with open(self.log_file, "a", encoding="utf-8") as f:
                 f.write(log_entry)
                 
-            logger.info(f"Appended generation log for {location} to {self.log_file}")
+            logger.info(f"📝 Appended hierarchical generation log for {location} to {self.log_file}")
             
         except Exception as e:
-            logger.error(f"Failed to append to log file: {e}")
+            logger.error(f"❌ Failed to append to log file: {e}")
+
+    def _append_error_to_log(self, location: str, error: Exception, fallback_en: str, fallback_fr: str):
+        """
+        Append error details to the log file with hierarchical structure.
+        
+        Args:
+            location: The location being processed
+            error: The exception that occurred
+            fallback_en: The fallback English description
+            fallback_fr: The fallback French description
+        """
+        try:
+            import datetime
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            log_entry = f"""
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        OLLAMA GENERATION ERROR LOG                          ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📅 TIMESTAMP: {timestamp}
+📍 LOCATION: {location}
+🤖 MODEL: {self.model}
+❌ ERROR TYPE: {type(error).__name__}
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              ERROR DETAILS                                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+{str(error)}
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           FALLBACK RESULTS                                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+🇬🇧 ENGLISH (FALLBACK):
+{fallback_en}
+
+🇫🇷 FRENCH (FALLBACK):
+{fallback_fr}
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              SUMMARY                                        │
+└──────────────────────────────────────────────────────────────────────────────┘
+❌ Status: Error - Using Fallback
+📊 English Length: {len(fallback_en)} characters
+📊 French Length: {len(fallback_fr)} characters
+🎯 Location: {location}
+⚠️  Note: Generated content is fallback, not AI-generated
+
+{'═'*80}
+"""
+            
+            with open(self.log_file, "a", encoding="utf-8") as f:
+                f.write(log_entry)
+                
+            logger.info(f"📝 Appended error log for {location} to {self.log_file}")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to append error to log file: {e}")
 
     def generate_attractions(self, location: str, country: str, region: str) -> Tuple[str, str]:
         """
@@ -84,6 +197,10 @@ French: {fr_result}
             Tuple of (mainAttractionEn, mainAttractionFr)
         """
         try:
+            # Create session header if this is the first generation
+            if not self.session_started:
+                self._create_session_header()
+            
             # Combined bilingual prompt
             prompt = f"""Generate a brief, engaging description of the main attraction or highlight for {location}, {country} in the {region} region.
 
@@ -131,8 +248,8 @@ English:"""
             fallback_en = f"Explore the unique landscapes and cultural experiences of {location} in {country}."
             fallback_fr = f"Découvrez les paysages uniques et les expériences culturelles de {location} en {country}."
             
-            # Log the error and fallback
-            self._append_to_log(location, f"ERROR: {e}", "No response", fallback_en, fallback_fr)
+            # Log the error and fallback with error-specific formatting
+            self._append_error_to_log(location, e, fallback_en, fallback_fr)
             
             return fallback_en, fallback_fr
 
