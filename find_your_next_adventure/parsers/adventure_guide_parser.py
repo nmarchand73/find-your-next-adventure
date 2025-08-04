@@ -14,6 +14,7 @@ from find_your_next_adventure.utils.maps import (
     generate_extended_links,
     generate_google_maps_link,
 )
+from find_your_next_adventure.utils.ollama_generator import OllamaGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -249,6 +250,23 @@ class AdventureGuideParser:
             "unknown_countries": 0,
         }
         self.failed_lines = []  # Track failed lines for debugging
+        
+        # Initialize Ollama generator
+        self.ollama_generator = OllamaGenerator()
+
+    def generate_main_attractions(self, location: str, country: str, region: str) -> Tuple[str, str]:
+        """
+        Generate main attractions in English and French using the dedicated Ollama generator.
+        
+        Args:
+            location: The location name
+            country: The country name
+            region: The region name
+            
+        Returns:
+            Tuple of (mainAttractionEn, mainAttractionFr)
+        """
+        return self.ollama_generator.generate_attractions(location, country, region)
 
     def parse_line(self, line: str) -> Optional[Destination]:
         self.stats["processed"] += 1
@@ -289,12 +307,17 @@ class AdventureGuideParser:
             extended_links_dict = generate_extended_links(location, coordinates)
             extended_links = ExtendedLinks(**extended_links_dict)
 
+            # Generate main attractions using Ollama
+            main_attraction_en, main_attraction_fr = self.generate_main_attractions(location, country, region)
+
             destination = Destination(
                 id=int(id_str),
                 location=location,
                 coordinates=coordinates,
                 country=country,
                 region=region,
+                mainAttractionEn=main_attraction_en,
+                mainAttractionFr=main_attraction_fr,
                 googleMapsLink=google_maps_link,
                 extendedLinks=extended_links,
             )

@@ -51,7 +51,9 @@ pip install -e ".[dev]"
 - **PDF Parsing**: Extract destinations from travel guide PDFs
 - **Geographic Organization**: Auto-organize by latitude regions
 - **Coordinate Processing**: Parse and validate GPS coordinates
+- **AI-Powered Attractions**: Generate main attractions in English and French using Ollama with phi4-mini model
 - **JSON Output**: Generate structured JSON files by region
+- **Generation Logging**: Detailed logs of all AI generation calls for debugging and analysis
 - **Simple Interface**: Easy-to-use command line tool
 
 ## 📁 Project Structure
@@ -100,7 +102,11 @@ The tool generates JSON files organized by latitude ranges:
         "latitudeDirection": "N",
         "longitudeDirection": "E"
       },
-      "description": "Arctic wilderness and polar bears"
+      "country": "Norway",
+      "region": "Scandinavia",
+      "mainAttractionEn": "Experience the raw beauty of Arctic wilderness with polar bear encounters and stunning glaciers.",
+      "mainAttractionFr": "Découvrez la beauté sauvage de l'Arctique avec des rencontres d'ours polaires et des glaciers époustouflants.",
+      "googleMapsLink": "https://maps.google.com/?q=78.2208,15.6401"
     }
   ]
 }
