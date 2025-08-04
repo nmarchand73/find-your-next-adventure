@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import fitz  # PyMuPDF
-import ollama
 
 from find_your_next_adventure.models.chapter import Chapter
 from find_your_next_adventure.models.coordinates import Coordinates
@@ -430,7 +429,7 @@ class AdventureGuideParser:
         logger.info(f"Success rate: {success_rate:.1f}%")
 
         if self.failed_lines:
-            logger.info(f"Failed lines sample (first 5):")
+            logger.info("Failed lines sample (first 5):")
             for line in self.failed_lines[:5]:
                 logger.info(f"  {line}")
 

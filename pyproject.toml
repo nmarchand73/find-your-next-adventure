@@ -47,14 +47,13 @@ test = [
 ]
 
 [project.scripts]
-adventure-parser = "find_your_next_adventure.cli:main"
-parse-adventure-guide = "pdf_to_json_parser:main"
+adventure-parser = "run:main"
 
 [project.urls]
-Homepage = "https://github.com/nicolas-marchand/find-your-next-adventure"
-Repository = "https://github.com/nicolas-marchand/find-your-next-adventure"
+Homepage = "https://github.com/nmarchand73/find-your-next-adventure"
+Repository = "https://github.com/nmarchand73/find-your-next-adventure"
 Documentation = "https://find-your-next-adventure.readthedocs.io"
-Issues = "https://github.com/nicolas-marchand/find-your-next-adventure/issues"
+Issues = "https://github.com/nmarchand73/find-your-next-adventure/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -87,6 +86,10 @@ profile = "black"
 multi_line_output = 3
 line_length = 88
 known_first_party = ["find_your_next_adventure"]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
 
 [tool.mypy]
 python_version = "3.8"
@@ -121,11 +124,19 @@ addopts = [
     "--cov-report=term-missing:skip-covered",
     "--cov-report=html",
     "--cov-report=xml",
+    "--disable-warnings",
+    "-W ignore::DeprecationWarning",
+    "-W ignore::UserWarning",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+    "ignore::FutureWarning",
 ]
 
 [tool.coverage.run]

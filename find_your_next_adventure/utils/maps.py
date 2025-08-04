@@ -2,9 +2,8 @@
 
 import re
 import urllib.parse
-from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Union
 
 from find_your_next_adventure.models.coordinates import Coordinates
 
@@ -376,7 +375,6 @@ def generate_extended_links(location: str, coordinates: Coordinates) -> Dict[str
         Dictionary with all extended links
     """
     lat, lng = coordinates.latitude, coordinates.longitude
-    clean_location = clean_location_name(location)
 
     return {
         "streetView": generate_google_street_view_link(location, coordinates),

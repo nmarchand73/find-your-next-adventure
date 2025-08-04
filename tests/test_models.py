@@ -2,9 +2,7 @@
 
 from dataclasses import asdict
 
-import pytest
-
-from find_your_next_adventure.models import Chapter, Coordinates, Destination
+from find_your_next_adventure.models import Coordinates, Destination
 
 
 class TestCoordinates:

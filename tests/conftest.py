@@ -1,7 +1,5 @@
 """Test configuration and fixtures."""
 
-from pathlib import Path
-
 import pytest
 
 from find_your_next_adventure.models import Chapter, Coordinates, Destination

@@ -3,9 +3,6 @@
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-import pytest
-
-from find_your_next_adventure.models import Coordinates, Destination
 from find_your_next_adventure.parsers import AdventureGuideParser
 
 

@@ -10,11 +10,6 @@ from .coordinates import (
     validate_coordinates,
 )
 from .file_io import backup_file, ensure_directory, get_file_size, load_json, save_json
-from .maps import (
-    generate_apple_maps_link,
-    generate_google_maps_link,
-    generate_openstreetmap_link,
-)
 
 __all__ = [
     "calculate_distance",
