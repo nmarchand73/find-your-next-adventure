@@ -1,0 +1,13 @@
+include README.md
+include LICENSE
+include pyproject.toml
+include setup.py
+include Makefile
+recursive-include find_your_next_adventure *.py
+recursive-include find_your_next_adventure py.typed
+recursive-include tests *.py
+recursive-include scripts *.py
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * *.so
+recursive-exclude * .DS_Store
