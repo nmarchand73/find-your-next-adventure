@@ -31,7 +31,9 @@ class OllamaGenerator:
             'top_p': 0.9,
             'max_tokens': 200  # Increased for bilingual response
         }
-        self.log_file = "ollama_generation.log"
+        # Create log file with timestamp
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.log_file = f"ollama_generation_{timestamp}.log"
         self.session_started = False
         self.stats = {
             'total_calls': 0,
@@ -48,12 +50,14 @@ class OllamaGenerator:
             
             session_header = f"""=== OLLAMA SESSION STARTED: {timestamp} ===
 Model: {self.model} | Batch Size: {self.batch_size} | Temp: {self.options.get('temperature', 'N/A')} | Max Tokens: {self.options.get('max_tokens', 'N/A')}
+Log File: {self.log_file}
 """
             
             with open(self.log_file, "a", encoding="utf-8") as f:
                 f.write(session_header)
                 
             print(f"🚀 Ollama session started | Model: {self.model} | Batch Size: {self.batch_size} | Temp: {self.options.get('temperature', 'N/A')}")
+            print(f"📝 Log file: {self.log_file}")
             logger.info(f"📋 Session started: {self.model}")
             self.session_started = True
             
