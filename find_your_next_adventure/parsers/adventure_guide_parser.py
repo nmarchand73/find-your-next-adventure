@@ -348,10 +348,10 @@ class AdventureGuideParser:
             with open(debug_file, "w", encoding="utf-8") as f:
                 json.dump(debug_report, f, ensure_ascii=False, indent=2)
             logger.info(f"Debug report saved: {debug_file}")
-            print(f"   💾 Saved: {debug_file.name}")
+            logger.info(f"   💾 Saved: {debug_file.name}")
         except Exception as e:
             logger.error(f"Debug report error: {e}")
-            print(f"   ❌ Debug report error: {e}")
+            logger.error(f"   ❌ Debug report error: {e}")
 
     def clean_location(self, location: str) -> str:
         location = re.sub(r"\s+", " ", location.strip())
@@ -436,11 +436,11 @@ class AdventureGuideParser:
         self.failed_lines = []  # Reset failed lines
 
         total_lines = len(lines)
-        print(f"📖 Processing {total_lines} lines of content...")
+        logger.info(f"📖 Processing {total_lines} lines of content...")
 
         for i, line in enumerate(lines):
             if i % 100 == 0 and i > 0:
-                print(f"   📊 Progress: {i}/{total_lines} lines ({i/total_lines*100:.1f}%)")
+                logger.info(f"   📊 Progress: {i}/{total_lines} lines ({i/total_lines*100:.1f}%)")
 
             destination = self.parse_line(line)
             if destination:
@@ -451,11 +451,11 @@ class AdventureGuideParser:
                         break
 
         # Process any remaining batch items
-        print(f"🔄 Processing final batch of Ollama requests...")
+        logger.info(f"🔄 Processing final batch of Ollama requests...")
         self.ollama_generator.process_batch(force=True)
 
         # Update destinations with actual Ollama results
-        print(f"🔄 Updating destinations with Ollama results...")
+        logger.info(f"🔄 Updating destinations with Ollama results...")
         for chapter_num, destinations in chapters_data.items():
             for destination in destinations:
                 en_result, fr_result = self.ollama_generator.get_attraction_result(destination.location)
@@ -471,8 +471,8 @@ class AdventureGuideParser:
         )
         logger.info(f"Success rate: {success_rate:.1f}%")
 
-        print(f"✅ Content processing complete: {self.stats['processed']} lines processed")
-        print(f"📊 Success rate: {success_rate:.1f}% ({self.stats['successful']}/{self.stats['processed']})")
+        logger.info(f"✅ Content processing complete: {self.stats['processed']} lines processed")
+        logger.info(f"📊 Success rate: {success_rate:.1f}% ({self.stats['successful']}/{self.stats['processed']})")
 
         if self.failed_lines:
             logger.info("Failed lines sample (first 5):")
@@ -486,19 +486,19 @@ class AdventureGuideParser:
             doc = fitz.open(pdf_path)
             content = ""
             total_pages = len(doc)
-            print(f"   📄 Loading {total_pages} pages...")
+            logger.info(f"   📄 Loading {total_pages} pages...")
             
             for page_num, page in enumerate(doc):
                 if page_num % 10 == 0 and page_num > 0:
-                    print(f"      📊 Page progress: {page_num}/{total_pages} ({page_num/total_pages*100:.1f}%)")
+                    logger.info(f"      📊 Page progress: {page_num}/{total_pages} ({page_num/total_pages*100:.1f}%)")
                 content += page.get_text() + "\n"
             
             doc.close()
-            print(f"   ✅ PDF loaded successfully: {len(content)} characters")
+            logger.info(f"   ✅ PDF loaded successfully: {len(content)} characters")
             return content
         except Exception as e:
             logger.error(f"Failed to load PDF: {e}")
-            print(f"   ❌ Failed to load PDF: {e}")
+            logger.error(f"   ❌ Failed to load PDF: {e}")
             return ""
 
     def create_chapter_json(
@@ -526,10 +526,10 @@ class AdventureGuideParser:
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(asdict(data), f, ensure_ascii=False, indent=2)
             logger.info(f"Saved: {output_path}")
-            print(f"   💾 Saved: {output_path.name}")
+            logger.info(f"   💾 Saved: {output_path.name}")
         except Exception as e:
             logger.error(f"Save error: {e}")
-            print(f"   ❌ Save error: {e}")
+            logger.error(f"   ❌ Save error: {e}")
 
     def create_combined_json(
         self, chapters_data: Dict[int, List[Destination]], output_dir: Path
@@ -565,31 +565,31 @@ class AdventureGuideParser:
             with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(combined_data, f, ensure_ascii=False, indent=2)
             logger.info(f"Complete guide saved: {output_file}")
-            print(f"   💾 Saved: {output_file.name}")
+            logger.info(f"   💾 Saved: {output_file.name}")
         except Exception as e:
             logger.error(f"Combined JSON error: {e}")
-            print(f"   ❌ Combined JSON error: {e}")
+            logger.error(f"   ❌ Combined JSON error: {e}")
 
     def process_pdf(self, pdf_path: Path, output_dir: Path) -> None:
         try:
-            print(f"📄 Loading PDF: {pdf_path}")
+            logger.info(f"📄 Loading PDF: {pdf_path}")
             logger.info(f"Processing: {pdf_path}")
 
             content = self.load_pdf(pdf_path)
             if not content:
                 logger.error("Failed to load PDF content")
-                print("❌ Failed to load PDF content")
+                logger.error("❌ Failed to load PDF content")
                 return
 
-            print(f"🔍 Parsing PDF content...")
+            logger.info(f"🔍 Parsing PDF content...")
             chapters_data = self.parse_pdf_content(content)
             total_destinations = sum(len(destinations) for destinations in chapters_data.values())
-            print(f"✅ Found {total_destinations} destinations across {len(chapters_data)} chapters")
+            logger.info(f"✅ Found {total_destinations} destinations across {len(chapters_data)} chapters")
 
             output_dir.mkdir(parents=True, exist_ok=True)
-            print(f"📁 Output directory: {output_dir}")
+            logger.info(f"📁 Output directory: {output_dir}")
 
-            print(f"💾 Saving chapter files...")
+            logger.info(f"💾 Saving chapter files...")
             for chapter_num, destinations in chapters_data.items():
                 if destinations:
                     chapter_json = self.create_chapter_json(chapter_num, destinations)
@@ -597,18 +597,18 @@ class AdventureGuideParser:
                         output_dir / f"chapter_{chapter_num}_destinations.json"
                     )
                     self.save_json(chapter_json, output_file)
-                    print(f"   📄 Chapter {chapter_num}: {len(destinations)} destinations")
+                    logger.info(f"   📄 Chapter {chapter_num}: {len(destinations)} destinations")
 
-            print(f"🔗 Creating combined JSON file...")
+            logger.info(f"🔗 Creating combined JSON file...")
             self.create_combined_json(chapters_data, output_dir)
-            print(f"✅ Combined JSON file created")
+            logger.info(f"✅ Combined JSON file created")
 
             if self.failed_lines:
-                print(f"🐛 Saving debug report ({len(self.failed_lines)} failed lines)...")
+                logger.info(f"🐛 Saving debug report ({len(self.failed_lines)} failed lines)...")
                 self.save_debug_report(output_dir)
-                print(f"✅ Debug report saved")
+                logger.info(f"✅ Debug report saved")
 
-            print(f"🎉 Processing complete! Total destinations: {total_destinations}")
+            logger.info(f"🎉 Processing complete! Total destinations: {total_destinations}")
             logger.info(
                 f"Processing complete! Total destinations: {total_destinations}"
             )
@@ -616,7 +616,7 @@ class AdventureGuideParser:
 
         except Exception as e:
             logger.error(f"Processing error: {e}")
-            print(f"❌ Error processing PDF: {e}")
+            logger.error(f"❌ Error processing PDF: {e}")
             raise
 
     def get_stats(self) -> dict:

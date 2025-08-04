@@ -47,7 +47,7 @@ class OllamaGenerator:
             
             session_info = f"Ollama session started | Model: {self.model} | Batch Size: {self.batch_size} | Temp: {self.options.get('temperature', 'N/A')} | Max Tokens: {self.options.get('max_tokens', 'N/A')}"
             
-            print(f"🚀 {session_info}")
+            logger.info(f"🚀 {session_info}")
             logger.info(f"📋 {session_info}")
             self.session_started = True
             
@@ -80,8 +80,8 @@ class OllamaGenerator:
             elapsed = (datetime.datetime.now() - self.stats['start_time']).total_seconds() if self.stats['start_time'] else 0
             success_rate = (self.stats['successful_calls'] / self.stats['total_calls'] * 100) if self.stats['total_calls'] > 0 else 0
             
-            print(f"✅ [{timestamp}] {location} | EN: {en_preview}")
-            print(f"   📊 Progress: {self.stats['total_calls']} calls | {success_rate:.1f}% success | {elapsed:.1f}s elapsed")
+            logger.info(f"✅ [{timestamp}] {location} | EN: {en_preview}")
+            logger.info(f"   📊 Progress: {self.stats['total_calls']} calls | {success_rate:.1f}% success | {elapsed:.1f}s elapsed")
             
             # Log using centralized logging
             logger.info(f"[{timestamp}] {location} | EN: {en_preview} | FR: {fr_preview}")
@@ -116,8 +116,8 @@ class OllamaGenerator:
             elapsed = (datetime.datetime.now() - self.stats['start_time']).total_seconds() if self.stats['start_time'] else 0
             success_rate = (self.stats['successful_calls'] / self.stats['total_calls'] * 100) if self.stats['total_calls'] > 0 else 0
             
-            print(f"❌ [{timestamp}] {location} | ERROR: {type(error).__name__} | FALLBACK: {en_preview}")
-            print(f"   📊 Progress: {self.stats['total_calls']} calls | {success_rate:.1f}% success | {elapsed:.1f}s elapsed")
+            logger.warning(f"❌ [{timestamp}] {location} | ERROR: {type(error).__name__} | FALLBACK: {en_preview}")
+            logger.info(f"   📊 Progress: {self.stats['total_calls']} calls | {success_rate:.1f}% success | {elapsed:.1f}s elapsed")
             
             # Log using centralized logging
             logger.warning(f"[{timestamp}] {location} | ERROR: {type(error).__name__} | FALLBACK EN: {en_preview} | FALLBACK FR: {fr_preview}")
@@ -151,17 +151,17 @@ class OllamaGenerator:
         """Print final generation statistics to console."""
         stats = self.get_stats()
         
-        print("\n" + "="*60)
-        print("📊 OLLAMA GENERATION STATISTICS")
-        print("="*60)
-        print(f"🎯 Total Calls: {stats['total_calls']}")
-        print(f"✅ Successful: {stats['successful_calls']}")
-        print(f"❌ Errors: {stats['error_calls']}")
-        print(f"📈 Success Rate: {stats['success_rate']:.1f}%")
-        print(f"⏱️  Total Time: {stats['elapsed_time']:.1f}s")
-        print(f"⚡ Avg Time/Call: {stats['avg_time_per_call']:.2f}s")
-        print(f"📦 Batch Size: {self.batch_size}")
-        print("="*60)
+        logger.info("\n" + "="*60)
+        logger.info("📊 OLLAMA GENERATION STATISTICS")
+        logger.info("="*60)
+        logger.info(f"🎯 Total Calls: {stats['total_calls']}")
+        logger.info(f"✅ Successful: {stats['successful_calls']}")
+        logger.info(f"❌ Errors: {stats['error_calls']}")
+        logger.info(f"📈 Success Rate: {stats['success_rate']:.1f}%")
+        logger.info(f"⏱️  Total Time: {stats['elapsed_time']:.1f}s")
+        logger.info(f"⚡ Avg Time/Call: {stats['avg_time_per_call']:.2f}s")
+        logger.info(f"📦 Batch Size: {self.batch_size}")
+        logger.info("="*60)
 
     def generate_attractions(self, location: str, country: str, region: str) -> Tuple[str, str]:
         """
@@ -217,14 +217,14 @@ class OllamaGenerator:
         batch = self.batch_queue[:self.batch_size]  # Process up to batch_size items
         self.batch_queue = self.batch_queue[self.batch_size:]  # Remove processed items
         
-        print(f"🔄 Processing {len(batch)} locations in single prompt...")
+        logger.info(f"🔄 Processing {len(batch)} locations in single prompt...")
         
         try:
             # Create a single prompt for the entire batch
             batch_prompt = self._create_batch_prompt(batch)
             
             # Call Ollama once for the entire batch
-            print(f"   📤 Sending single prompt with {len(batch)} locations to Ollama...")
+            logger.info(f"   📤 Sending single prompt with {len(batch)} locations to Ollama...")
             response = ollama.generate(
                 model=self.model,
                 prompt=batch_prompt,
@@ -244,11 +244,11 @@ class OllamaGenerator:
             for location, (en_result, fr_result) in results.items():
                 self.batch_results[location] = (en_result, fr_result)
             
-            print(f"   ✅ Successfully processed {len(results)} locations in single API call")
+            logger.info(f"   ✅ Successfully processed {len(results)} locations in single API call")
                 
         except Exception as e:
             logger.error(f"Batch Ollama generation error: {e}")
-            print(f"❌ Batch processing error: {e}")
+            logger.error(f"❌ Batch processing error: {e}")
             
             # Create fallback results for the entire batch
             for item in batch:
@@ -331,17 +331,17 @@ Tokyo: English: Experience the blend of ancient temples and cutting-edge technol
             self.stats['successful_calls'] += 1
             
             # Console output with more details
-            print(f"✅ [{timestamp}] Batch processed: {len(batch)} locations in single prompt")
+            logger.info(f"✅ [{timestamp}] Batch processed: {len(batch)} locations in single prompt")
             
             # Show sample results
             sample_locations = list(results.keys())[:3]
             for location in sample_locations:
                 en_result, fr_result = results[location]
                 en_preview = en_result[:60] + "..." if len(en_result) > 60 else en_result
-                print(f"   📍 {location}: {en_preview}")
+                logger.info(f"   📍 {location}: {en_preview}")
             
             if len(results) > 3:
-                print(f"   ... and {len(results) - 3} more locations")
+                logger.info(f"   ... and {len(results) - 3} more locations")
             
             # Log using centralized logging
             logger.info(f"[{timestamp}] BATCH: {len(batch)} locations processed in single prompt")
