@@ -1,9 +1,12 @@
 """Utility functions for coordinate operations."""
 
+import logging
 import math
 from typing import List, Tuple
 
 from find_your_next_adventure.models import Coordinates
+
+logger = logging.getLogger(__name__)
 
 
 def calculate_distance(coord1: Coordinates, coord2: Coordinates) -> float:
@@ -49,7 +52,10 @@ def validate_coordinates(latitude: float, longitude: float) -> bool:
     Returns:
         True if coordinates are valid, False otherwise
     """
-    return -90.0 <= latitude <= 90.0 and -180.0 <= longitude <= 180.0
+    is_valid = -90.0 <= latitude <= 90.0 and -180.0 <= longitude <= 180.0
+    if not is_valid:
+        logger.warning(f"Invalid coordinates: lat={latitude}, lon={longitude}")
+    return is_valid
 
 
 def format_coordinates(coord: Coordinates, format_type: str = "decimal") -> str:

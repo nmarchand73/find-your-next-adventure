@@ -1,11 +1,14 @@
 """Utility functions for generating map links."""
 
+import logging
 import re
 import urllib.parse
 from enum import Enum
 from typing import Dict, Union
 
 from find_your_next_adventure.models.coordinates import Coordinates
+
+logger = logging.getLogger(__name__)
 
 
 class ImageSize(Enum):
@@ -78,7 +81,9 @@ def generate_google_maps_link(location: str, coordinates: Coordinates) -> str:
     encoded_query = urllib.parse.quote(query)
 
     # Add zoom level for better initial view (15 is good for city/landmark level)
-    return f"{base_url}{encoded_query},15z"
+    result = f"{base_url}{encoded_query},15z"
+    logger.debug(f"Generated Google Maps link for {location}: {result}")
+    return result
 
 
 def generate_openstreetmap_link(location: str, coordinates: Coordinates) -> str:
@@ -376,7 +381,7 @@ def generate_extended_links(location: str, coordinates: Coordinates) -> Dict[str
     """
     lat, lng = coordinates.latitude, coordinates.longitude
 
-    return {
+    result = {
         "streetView": generate_google_street_view_link(location, coordinates),
         "googleEarth": f"https://earth.google.com/web/@{lat},{lng},1000a,35y,0h,0t,0r",
         "satelliteView": f"https://www.google.com/maps/@{lat},{lng},1000m/data=!3m1!1e3",
@@ -384,3 +389,6 @@ def generate_extended_links(location: str, coordinates: Coordinates) -> Dict[str
         "openStreetMap": generate_openstreetmap_link(location, coordinates),
         "appleMaps": generate_apple_maps_link(location, coordinates),
     }
+    
+    logger.debug(f"Generated extended links for {location}: {len(result)} links")
+    return result
