@@ -29,12 +29,19 @@ class OllamaGenerator:
         }
         self.log_file = "ollama_generation.log"
         self.session_started = False
+        self.stats = {
+            'total_calls': 0,
+            'successful_calls': 0,
+            'error_calls': 0,
+            'start_time': None
+        }
 
     def _create_session_header(self):
         """Create a session header for the log file."""
         try:
             import datetime
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.stats['start_time'] = datetime.datetime.now()
             
             session_header = f"""=== OLLAMA SESSION STARTED: {timestamp} ===
 Model: {self.model} | Temp: {self.options.get('temperature', 'N/A')} | Max Tokens: {self.options.get('max_tokens', 'N/A')}
@@ -43,6 +50,7 @@ Model: {self.model} | Temp: {self.options.get('temperature', 'N/A')} | Max Token
             with open(self.log_file, "a", encoding="utf-8") as f:
                 f.write(session_header)
                 
+            print(f"🚀 Ollama session started | Model: {self.model} | Temp: {self.options.get('temperature', 'N/A')}")
             logger.info(f"📋 Session started: {self.model}")
             self.session_started = True
             
@@ -51,7 +59,7 @@ Model: {self.model} | Temp: {self.options.get('temperature', 'N/A')} | Max Token
 
     def _append_to_log(self, location: str, prompt: str, response: str, en_result: str, fr_result: str):
         """
-        Append concise Ollama generation details to the log file.
+        Append concise Ollama generation details to the log file and display on console.
         
         Args:
             location: The location being processed
@@ -64,11 +72,22 @@ Model: {self.model} | Temp: {self.options.get('temperature', 'N/A')} | Max Token
             import datetime
             timestamp = datetime.datetime.now().strftime("%H:%M:%S")
             
+            # Update stats
+            self.stats['total_calls'] += 1
+            self.stats['successful_calls'] += 1
+            
             # Truncate long responses for readability
-            response_preview = response[:100] + "..." if len(response) > 100 else response
             en_preview = en_result[:80] + "..." if len(en_result) > 80 else en_result
             fr_preview = fr_result[:80] + "..." if len(fr_result) > 80 else fr_result
             
+            # Console output with progress
+            elapsed = (datetime.datetime.now() - self.stats['start_time']).total_seconds() if self.stats['start_time'] else 0
+            success_rate = (self.stats['successful_calls'] / self.stats['total_calls'] * 100) if self.stats['total_calls'] > 0 else 0
+            
+            print(f"✅ [{timestamp}] {location} | EN: {en_preview}")
+            print(f"   📊 Progress: {self.stats['total_calls']} calls | {success_rate:.1f}% success | {elapsed:.1f}s elapsed")
+            
+            # Log file entry (concise)
             log_entry = f"""[{timestamp}] {location} | EN: {en_preview} | FR: {fr_preview}
 """
             
@@ -82,7 +101,7 @@ Model: {self.model} | Temp: {self.options.get('temperature', 'N/A')} | Max Token
 
     def _append_error_to_log(self, location: str, error: Exception, fallback_en: str, fallback_fr: str):
         """
-        Append concise error details to the log file.
+        Append concise error details to the log file and display on console.
         
         Args:
             location: The location being processed
@@ -94,10 +113,22 @@ Model: {self.model} | Temp: {self.options.get('temperature', 'N/A')} | Max Token
             import datetime
             timestamp = datetime.datetime.now().strftime("%H:%M:%S")
             
+            # Update stats
+            self.stats['total_calls'] += 1
+            self.stats['error_calls'] += 1
+            
             # Truncate fallback responses
             en_preview = fallback_en[:80] + "..." if len(fallback_en) > 80 else fallback_en
             fr_preview = fallback_fr[:80] + "..." if len(fallback_fr) > 80 else fallback_fr
             
+            # Console output with error details
+            elapsed = (datetime.datetime.now() - self.stats['start_time']).total_seconds() if self.stats['start_time'] else 0
+            success_rate = (self.stats['successful_calls'] / self.stats['total_calls'] * 100) if self.stats['total_calls'] > 0 else 0
+            
+            print(f"❌ [{timestamp}] {location} | ERROR: {type(error).__name__} | FALLBACK: {en_preview}")
+            print(f"   📊 Progress: {self.stats['total_calls']} calls | {success_rate:.1f}% success | {elapsed:.1f}s elapsed")
+            
+            # Log file entry (concise)
             log_entry = f"""[{timestamp}] {location} | ERROR: {type(error).__name__} | FALLBACK EN: {en_preview} | FALLBACK FR: {fr_preview}
 """
             
@@ -108,6 +139,44 @@ Model: {self.model} | Temp: {self.options.get('temperature', 'N/A')} | Max Token
             
         except Exception as e:
             logger.error(f"❌ Failed to append error to log file: {e}")
+
+    def get_stats(self) -> dict:
+        """
+        Get current generation statistics.
+        
+        Returns:
+            Dictionary with generation statistics
+        """
+        if self.stats['start_time']:
+            elapsed = (datetime.datetime.now() - self.stats['start_time']).total_seconds()
+            avg_time = elapsed / self.stats['total_calls'] if self.stats['total_calls'] > 0 else 0
+            success_rate = (self.stats['successful_calls'] / self.stats['total_calls'] * 100) if self.stats['total_calls'] > 0 else 0
+            
+            return {
+                'total_calls': self.stats['total_calls'],
+                'successful_calls': self.stats['successful_calls'],
+                'error_calls': self.stats['error_calls'],
+                'success_rate': success_rate,
+                'elapsed_time': elapsed,
+                'avg_time_per_call': avg_time
+            }
+        return self.stats
+
+    def print_final_stats(self):
+        """Print final generation statistics to console."""
+        stats = self.get_stats()
+        
+        print("\n" + "="*60)
+        print("📊 OLLAMA GENERATION STATISTICS")
+        print("="*60)
+        print(f"🎯 Total Calls: {stats['total_calls']}")
+        print(f"✅ Successful: {stats['successful_calls']}")
+        print(f"❌ Errors: {stats['error_calls']}")
+        print(f"📈 Success Rate: {stats['success_rate']:.1f}%")
+        print(f"⏱️  Total Time: {stats['elapsed_time']:.1f}s")
+        print(f"⚡ Avg Time/Call: {stats['avg_time_per_call']:.2f}s")
+        print(f"📁 Log File: {self.log_file}")
+        print("="*60)
 
     def generate_attractions(self, location: str, country: str, region: str) -> Tuple[str, str]:
         """

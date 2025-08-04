@@ -76,10 +76,13 @@ def main():
         
         print("\n✅ Parsing completed successfully!")
         print("=" * 50)
-        print(f"📊 Statistics:")
+        print(f"📊 Parser Statistics:")
         print(f"   • Successful destinations: {stats['successful']}")
         print(f"   • Failed parsing attempts: {stats['failed']}")
         print(f"   • Unknown countries: {stats['unknown_countries']}")
+        
+        # Print Ollama statistics
+        parser.ollama_generator.print_final_stats()
         
         # List generated files
         json_files = list(output_dir.glob("*.json"))
