@@ -1,8 +1,10 @@
 """Test configuration and fixtures."""
 
-import pytest
 from pathlib import Path
-from find_your_next_adventure.models import Coordinates, Destination, Chapter
+
+import pytest
+
+from find_your_next_adventure.models import Chapter, Coordinates, Destination
 
 
 @pytest.fixture
@@ -12,7 +14,7 @@ def sample_coordinates():
         latitude=59.9139,
         longitude=10.7522,
         latitudeDirection="N",
-        longitudeDirection="E"
+        longitudeDirection="E",
     )
 
 
@@ -24,7 +26,7 @@ def sample_destination(sample_coordinates):
         location="Oslo, Norway",
         coordinates=sample_coordinates,
         country="Norway",
-        region="Scandinavia"
+        region="Scandinavia",
     )
 
 
@@ -42,8 +44,8 @@ def sample_chapter(sample_destination):
             "chapter": "1",
             "generatedDate": "2025-08-01",
             "coordinateSystem": "WGS84",
-            "format": "Decimal Degrees"
-        }
+            "format": "Decimal Degrees",
+        },
     )
 
 

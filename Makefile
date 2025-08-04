@@ -1,4 +1,4 @@
-.PHONY: help install install-dev test test-cov lint format type-check clean build docs
+.PHONY: help install install-dev test test-cov lint format type-check clean build run
 .DEFAULT_GOAL := help
 
 help: ## Show this help message
@@ -19,9 +19,6 @@ test: ## Run tests
 test-cov: ## Run tests with coverage
 	pytest --cov=find_your_next_adventure --cov-report=html --cov-report=term-missing
 
-test-fast: ## Run tests excluding slow tests
-	pytest -m "not slow"
-
 lint: ## Run linting
 	flake8 find_your_next_adventure tests
 
@@ -39,32 +36,26 @@ type-check: ## Run type checking
 check: format-check lint type-check test ## Run all checks
 
 clean: ## Clean build artifacts
-	rm -rf build/
-	rm -rf dist/
-	rm -rf *.egg-info/
-	rm -rf htmlcov/
-	rm -rf .coverage
-	rm -rf .pytest_cache/
-	rm -rf .mypy_cache/
-	find . -type d -name __pycache__ -delete
-	find . -type f -name "*.pyc" -delete
+	@echo "Cleaning build artifacts..."
+	@if exist build rmdir /s /q build
+	@if exist dist rmdir /s /q dist
+	@if exist *.egg-info rmdir /s /q *.egg-info
+	@if exist htmlcov rmdir /s /q htmlcov
+	@if exist .coverage del .coverage
+	@if exist .pytest_cache rmdir /s /q .pytest_cache
+	@if exist .mypy_cache rmdir /s /q .mypy_cache
+	@for /d /r . %%d in (__pycache__) do @if exist "%%d" rmdir /s /q "%%d"
+	@for /r . %%f in (*.pyc) do @if exist "%%f" del "%%f"
 
 build: clean ## Build package
 	python -m build
 
-docs: ## Generate documentation
-	@echo "Documentation generation not yet implemented"
+run: ## Run the parser with sample PDF
+	python run.py
 
-run-example: ## Run example with sample data
-	python pdf_to_json_parser.py "Find Your Next Adventure.pdf" "./output/"
+run-custom: ## Run the parser with custom PDF (usage: make run-custom PDF=myfile.pdf OUTPUT=./output/)
+	python run.py "$(PDF)" "$(OUTPUT)"
 
-pre-commit: format lint type-check test ## Run pre-commit checks
-
-release-check: clean build ## Check package is ready for release
-	python -m twine check dist/*
-
-.PHONY: setup-dev
 setup-dev: ## Set up development environment
 	pip install -e ".[dev]"
-	pre-commit install
 	@echo "Development environment set up successfully!"

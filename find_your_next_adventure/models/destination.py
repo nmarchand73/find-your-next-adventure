@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Dict
+
 from .coordinates import Coordinates
+
 
 @dataclass
 class ExtendedLinks:
@@ -10,6 +12,7 @@ class ExtendedLinks:
     googleImages: str = ""
     openStreetMap: str = ""
     appleMaps: str = ""
+
 
 @dataclass
 class Destination:
@@ -22,7 +25,7 @@ class Destination:
     mainAttractionFr: str = ""
     googleMapsLink: str = ""
     extendedLinks: ExtendedLinks = None
-    
+
     def __post_init__(self):
         if self.extendedLinks is None:
             self.extendedLinks = ExtendedLinks()

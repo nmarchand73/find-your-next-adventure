@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Dict, List
+
 from .destination import Destination
+
 
 @dataclass
 class Chapter:
