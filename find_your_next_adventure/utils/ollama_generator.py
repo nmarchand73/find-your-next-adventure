@@ -36,27 +36,14 @@ class OllamaGenerator:
             import datetime
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
-            session_header = f"""
-{'═'*80}
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                        OLLAMA GENERATION SESSION                            ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-
-🚀 SESSION STARTED: {timestamp}
-🤖 MODEL: {self.model}
-📁 LOG FILE: {self.log_file}
-⚙️  TEMPERATURE: {self.options.get('temperature', 'N/A')}
-🎯 TOP_P: {self.options.get('top_p', 'N/A')}
-📏 MAX_TOKENS: {self.options.get('max_tokens', 'N/A')}
-
-{'═'*80}
-
+            session_header = f"""=== OLLAMA SESSION STARTED: {timestamp} ===
+Model: {self.model} | Temp: {self.options.get('temperature', 'N/A')} | Max Tokens: {self.options.get('max_tokens', 'N/A')}
 """
             
             with open(self.log_file, "a", encoding="utf-8") as f:
                 f.write(session_header)
                 
-            logger.info(f"📋 Created session header in {self.log_file}")
+            logger.info(f"📋 Session started: {self.model}")
             self.session_started = True
             
         except Exception as e:
@@ -64,7 +51,7 @@ class OllamaGenerator:
 
     def _append_to_log(self, location: str, prompt: str, response: str, en_result: str, fr_result: str):
         """
-        Append the Ollama generation details to the log file with hierarchical structure.
+        Append concise Ollama generation details to the log file.
         
         Args:
             location: The location being processed
@@ -75,59 +62,27 @@ class OllamaGenerator:
         """
         try:
             import datetime
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
             
-            log_entry = f"""
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                           OLLAMA GENERATION LOG                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-
-📅 TIMESTAMP: {timestamp}
-📍 LOCATION: {location}
-🤖 MODEL: {self.model}
-
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                              INPUT PROMPT                                   │
-└──────────────────────────────────────────────────────────────────────────────┘
-{prompt}
-
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                            RAW RESPONSE                                     │
-└──────────────────────────────────────────────────────────────────────────────┘
-{response}
-
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                           PARSED RESULTS                                    │
-└──────────────────────────────────────────────────────────────────────────────┘
-
-🇬🇧 ENGLISH:
-{en_result}
-
-🇫🇷 FRENCH:
-{fr_result}
-
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                              SUMMARY                                        │
-└──────────────────────────────────────────────────────────────────────────────┘
-✅ Status: Success
-📊 English Length: {len(en_result)} characters
-📊 French Length: {len(fr_result)} characters
-🎯 Location: {location}
-
-{'═'*80}
+            # Truncate long responses for readability
+            response_preview = response[:100] + "..." if len(response) > 100 else response
+            en_preview = en_result[:80] + "..." if len(en_result) > 80 else en_result
+            fr_preview = fr_result[:80] + "..." if len(fr_result) > 80 else fr_result
+            
+            log_entry = f"""[{timestamp}] {location} | EN: {en_preview} | FR: {fr_preview}
 """
             
             with open(self.log_file, "a", encoding="utf-8") as f:
                 f.write(log_entry)
                 
-            logger.info(f"📝 Appended hierarchical generation log for {location} to {self.log_file}")
+            logger.info(f"✅ {location}: {en_preview}")
             
         except Exception as e:
             logger.error(f"❌ Failed to append to log file: {e}")
 
     def _append_error_to_log(self, location: str, error: Exception, fallback_en: str, fallback_fr: str):
         """
-        Append error details to the log file with hierarchical structure.
+        Append concise error details to the log file.
         
         Args:
             location: The location being processed
@@ -137,49 +92,19 @@ class OllamaGenerator:
         """
         try:
             import datetime
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
             
-            log_entry = f"""
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                        OLLAMA GENERATION ERROR LOG                          ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-
-📅 TIMESTAMP: {timestamp}
-📍 LOCATION: {location}
-🤖 MODEL: {self.model}
-❌ ERROR TYPE: {type(error).__name__}
-
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                              ERROR DETAILS                                  │
-└──────────────────────────────────────────────────────────────────────────────┘
-{str(error)}
-
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                           FALLBACK RESULTS                                  │
-└──────────────────────────────────────────────────────────────────────────────┘
-
-🇬🇧 ENGLISH (FALLBACK):
-{fallback_en}
-
-🇫🇷 FRENCH (FALLBACK):
-{fallback_fr}
-
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                              SUMMARY                                        │
-└──────────────────────────────────────────────────────────────────────────────┘
-❌ Status: Error - Using Fallback
-📊 English Length: {len(fallback_en)} characters
-📊 French Length: {len(fallback_fr)} characters
-🎯 Location: {location}
-⚠️  Note: Generated content is fallback, not AI-generated
-
-{'═'*80}
+            # Truncate fallback responses
+            en_preview = fallback_en[:80] + "..." if len(fallback_en) > 80 else fallback_en
+            fr_preview = fallback_fr[:80] + "..." if len(fallback_fr) > 80 else fallback_fr
+            
+            log_entry = f"""[{timestamp}] {location} | ERROR: {type(error).__name__} | FALLBACK EN: {en_preview} | FALLBACK FR: {fr_preview}
 """
             
             with open(self.log_file, "a", encoding="utf-8") as f:
                 f.write(log_entry)
                 
-            logger.info(f"📝 Appended error log for {location} to {self.log_file}")
+            logger.warning(f"⚠️  {location}: Error - {type(error).__name__}")
             
         except Exception as e:
             logger.error(f"❌ Failed to append error to log file: {e}")
