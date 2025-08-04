@@ -3,78 +3,80 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Project Status: Active](https://img.shields.io/badge/Project%20Status-Active-brightgreen.svg)](https://github.com/nicolas-marchand/find-your-next-adventure)
 
-A modern Python package for extracting structured JSON data from adventure travel guide PDFs. Parses destinations with coordinates and organizes them by geographic regions.
+A simple Python tool to extract adventure destinations from PDF travel guides and convert them to structured JSON format.
 
-**✅ Status**: Complete with state-of-the-art Python architecture
+## 🚀 Quick Start
 
-## 🚀 Features
+### Simple Usage
+```bash
+# Parse a PDF and generate JSON files
+python main.py "FindYourNextAdventure.pdf" "./output/"
+```
 
-- **PDF Parsing**: Extract destinations from travel guide PDFs using PyMuPDF
-- **Geographic Organization**: Auto-organize by regions/countries with comprehensive mapping
-- **Coordinate Processing**: Parse, validate, and calculate distances between coordinates
-- **Multi-format Output**: Individual chapter files + combined datasets
-- **Modern Architecture**: Type-safe, modular design with CLI interface and utilities
-- **Professional Tooling**: Full testing, linting, formatting, and development automation
+### Example Script
+```bash
+# Run the example to see how it works
+python example.py
+```
+
+### Programmatic Usage
+```python
+from find_your_next_adventure.parsers.adventure_guide_parser import AdventureGuideParser
+
+# Initialize parser
+parser = AdventureGuideParser()
+
+# Parse PDF and generate JSON files
+parser.process_pdf("adventure_guide.pdf", "./output/")
+
+# Get statistics
+stats = parser.get_stats()
+print(f"Parsed {stats['successful']} destinations successfully!")
+```
 
 ## 📦 Installation
 
 ```bash
-# Install from source (recommended)
-git clone https://github.com/nicolas-marchand/find-your-next-adventure.git
+# Clone the repository
+git clone https://github.com/nmarchand73/find-your-next-adventure.git
 cd find-your-next-adventure
+
+# Install the package
 pip install -e .
 
-# Development installation
+# For development
 pip install -e ".[dev]"
-# or
-make install-dev
 ```
 
-## 🎯 Quick Start
+## 🎯 Features
 
-```bash
-# Basic usage
-python pdf_to_json_parser.py "guide.pdf" "./output/"
-
-# Modern CLI with verbose output
-python -m find_your_next_adventure.cli --verbose "guide.pdf" "./output/"
-
-# Programmatic usage
-from find_your_next_adventure.parsers import AdventureGuideParser
-from find_your_next_adventure.models import Coordinates
-from find_your_next_adventure.utils import calculate_distance
-
-parser = AdventureGuideParser()
-parser.process_pdf("guide.pdf", "./output/")
-
-# Coordinate utilities
-coords1 = Coordinates(59.9139, 10.7522, "N", "E")  # Oslo
-coords2 = Coordinates(59.3293, 18.0686, "N", "E")  # Stockholm
-distance = calculate_distance(coords1, coords2)     # 416.30 km
-```
+- **PDF Parsing**: Extract destinations from travel guide PDFs
+- **Geographic Organization**: Auto-organize by latitude regions
+- **Coordinate Processing**: Parse and validate GPS coordinates
+- **JSON Output**: Generate structured JSON files by region
+- **Simple Interface**: Easy-to-use command line tool
 
 ## 📁 Project Structure
 
 ```
-find_your_next_adventure/          # Main package
-├── models/                         # Data models (Coordinates, Destination, Chapter)
-├── parsers/                        # PDF parsing (AdventureGuideParser)
-├── utils/                          # Utilities (distance calc, formatting)
-└── cli.py                          # Command-line interface
-
-tests/                              # Comprehensive test suite
-scripts/                            # Development utilities  
-pdf_to_json_parser.py              # Legacy CLI
-pyproject.toml                      # Modern packaging
-Makefile                            # Development automation
+find-your-next-adventure/
+├── main.py                          # Simple command-line interface
+├── example.py                       # Usage example
+├── find_your_next_adventure/        # Main package
+│   ├── models/                      # Data models
+│   ├── parsers/                     # PDF parsing logic
+│   └── utils/                       # Utilities
+├── tests/                           # Test suite
+├── output/                          # Generated JSON files
+└── FindYourNextAdventure.pdf        # Sample PDF
 ```
 
 ## 🌍 Output Format
 
-Generates JSON files organized by latitude ranges:
-- `chapter_1_destinations.json` - Arctic (90°N to 60°N)  
+The tool generates JSON files organized by latitude ranges:
+
+- `chapter_1_destinations.json` - Arctic (90°N to 60°N)
 - `chapter_2_destinations.json` - Northern (60°N to 45°N)
 - `chapter_3_destinations.json` - Mid-northern (45°N to 30°N)
 - `chapter_4_destinations.json` - Northern tropics (30°N to 15°N)
@@ -84,8 +86,7 @@ Generates JSON files organized by latitude ranges:
 - `chapter_8_destinations.json` - Antarctic (30°S to 90°S)
 - `complete_adventure_guide.json` - Combined dataset
 
-<details>
-<summary>Example JSON Structure</summary>
+### Example JSON Structure
 
 ```json
 {
@@ -98,93 +99,45 @@ Generates JSON files organized by latitude ranges:
       "id": 1,
       "location": "Svalbard, Norway",
       "coordinates": {
-        "latitude": 78.2232,
-        "longitude": 15.6267,
+        "latitude": 78.2208,
+        "longitude": 15.6401,
         "latitudeDirection": "N",
         "longitudeDirection": "E"
       },
-      "country": "Norway",
-      "region": "Scandinavia"
+      "description": "Arctic wilderness and polar bears"
     }
-  ],
-  "metadata": {
-    "source": "Find Your Next Adventure Travel Guide",
-    "chapter": "1",
-    "generatedDate": "2025-08-01",
-    "coordinateSystem": "WGS84"
-  }
-}
-```
-</details>
-  "totalDestinations": 44,
-  "destinations": [
-    {
-      "id": 1,
-      "location": "Svalbard, Norway",
-      "coordinates": {
-        "latitude": 78.2232,
-        "longitude": 15.6267,
-        "latitudeDirection": "N",
-        "longitudeDirection": "E"
-      },
-      "country": "Norway",
-      "region": "Scandinavia"
-    }
-  ],
-  "metadata": {
-    "source": "Find Your Next Adventure Travel Guide",
-    "chapter": "1",
-    "generatedDate": "2025-08-01",
-    "coordinateSystem": "WGS84",
-    "format": "Decimal Degrees"
-  }
+  ]
 }
 ```
 
-## 🧪 Development
+## 🛠️ Development
 
 ```bash
-# Setup
-make setup-dev              # Install dev dependencies + pre-commit hooks
+# Run tests
+pytest
 
-# Testing  
-make test                    # Run tests
-make test-cov               # Run with coverage
+# Format code
+black find_your_next_adventure tests
 
-# Code Quality
-make format                 # Format code (black + isort)
-make lint                   # Lint code (flake8)
-make type-check            # Type checking (mypy)
-make check                 # Run all checks
+# Lint code
+flake8 find_your_next_adventure tests
 
-# Run example
-make run-example
+# Type checking
+mypy find_your_next_adventure
 ```
 
-## 📋 Requirements & Standards
+## 📝 License
 
-- **Python**: 3.8+ with full type hints
-- **Dependencies**: PyMuPDF>=1.23.0, ollama>=0.1.0 (optional)
-- **Code Style**: Black formatting, isort imports, flake8 linting
-- **Architecture**: Modular design with comprehensive testing
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make changes following project standards
-4. Run tests (`make check`)
-5. Submit a Pull Request
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
-## 📞 Support
-
-- 🐛 [Issues](https://github.com/nicolas-marchand/find-your-next-adventure/issues)
-- 📧 nicolas.marchand@example.com
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ---
 
-**🎯 Ready for Professional Use | 🧪 Fully Tested | 📦 Modern Packaging**
+**Made with ❤️ for adventure seekers everywhere!**
