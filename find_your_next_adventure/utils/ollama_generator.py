@@ -16,14 +16,16 @@ logger = logging.getLogger(__name__)
 class OllamaGenerator:
     """Dedicated class for generating text using Ollama with phi4-mini model."""
 
-    def __init__(self, model: str = "phi4-mini"):
+    def __init__(self, model: str = "phi4-mini", batch_size: int = 5):
         """
         Initialize the Ollama generator.
         
         Args:
             model: The Ollama model to use (default: phi4-mini)
+            batch_size: Number of locations to process in each batch (default: 5)
         """
         self.model = model
+        self.batch_size = batch_size
         self.options = {
             'temperature': 0.7,
             'top_p': 0.9,
@@ -45,13 +47,13 @@ class OllamaGenerator:
             self.stats['start_time'] = datetime.datetime.now()
             
             session_header = f"""=== OLLAMA SESSION STARTED: {timestamp} ===
-Model: {self.model} | Temp: {self.options.get('temperature', 'N/A')} | Max Tokens: {self.options.get('max_tokens', 'N/A')}
+Model: {self.model} | Batch Size: {self.batch_size} | Temp: {self.options.get('temperature', 'N/A')} | Max Tokens: {self.options.get('max_tokens', 'N/A')}
 """
             
             with open(self.log_file, "a", encoding="utf-8") as f:
                 f.write(session_header)
                 
-            print(f"🚀 Ollama session started | Model: {self.model} | Temp: {self.options.get('temperature', 'N/A')}")
+            print(f"🚀 Ollama session started | Model: {self.model} | Batch Size: {self.batch_size} | Temp: {self.options.get('temperature', 'N/A')}")
             logger.info(f"📋 Session started: {self.model}")
             self.session_started = True
             
@@ -174,6 +176,7 @@ Model: {self.model} | Temp: {self.options.get('temperature', 'N/A')} | Max Token
         print(f"📈 Success Rate: {stats['success_rate']:.1f}%")
         print(f"⏱️  Total Time: {stats['elapsed_time']:.1f}s")
         print(f"⚡ Avg Time/Call: {stats['avg_time_per_call']:.2f}s")
+        print(f"📦 Batch Size: {self.batch_size}")
         print(f"📁 Log File: {self.log_file}")
         print("="*60)
 
@@ -209,7 +212,7 @@ Model: {self.model} | Temp: {self.options.get('temperature', 'N/A')} | Max Token
         })
         
         # Process batch if it reaches the size limit
-        if len(self.batch_queue) >= 50:
+        if len(self.batch_queue) >= self.batch_size:
             self.process_batch()
     
     def process_batch(self, force: bool = False):
@@ -222,14 +225,14 @@ Model: {self.model} | Temp: {self.options.get('temperature', 'N/A')} | Max Token
         if not hasattr(self, 'batch_queue') or not self.batch_queue:
             return
             
-        if not force and len(self.batch_queue) < 50:
+        if not force and len(self.batch_queue) < self.batch_size:
             return
             
         if not self.session_started:
             self._create_session_header()
         
-        batch = self.batch_queue[:50]  # Process up to 50 items
-        self.batch_queue = self.batch_queue[50:]  # Remove processed items
+        batch = self.batch_queue[:self.batch_size]  # Process up to batch_size items
+        self.batch_queue = self.batch_queue[self.batch_size:]  # Remove processed items
         
         print(f"🔄 Processing {len(batch)} locations in single prompt...")
         

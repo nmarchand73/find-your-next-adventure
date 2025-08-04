@@ -251,8 +251,8 @@ class AdventureGuideParser:
         }
         self.failed_lines = []  # Track failed lines for debugging
         
-        # Initialize Ollama generator
-        self.ollama_generator = OllamaGenerator()
+        # Initialize Ollama generator with default batch size of 5
+        self.ollama_generator = OllamaGenerator(batch_size=5)
 
     def generate_main_attractions(self, location: str, country: str, region: str) -> Tuple[str, str]:
         """
@@ -449,6 +449,18 @@ class AdventureGuideParser:
                     if start_id <= destination.id <= end_id:
                         chapters_data[chapter_num].append(destination)
                         break
+
+        # Process any remaining batch items
+        print(f"🔄 Processing final batch of Ollama requests...")
+        self.ollama_generator.process_batch(force=True)
+
+        # Update destinations with actual Ollama results
+        print(f"🔄 Updating destinations with Ollama results...")
+        for chapter_num, destinations in chapters_data.items():
+            for destination in destinations:
+                en_result, fr_result = self.ollama_generator.get_attraction_result(destination.location)
+                destination.mainAttractionEn = en_result
+                destination.mainAttractionFr = fr_result
 
         success_rate = (
             self.stats["successful"] / max(1, self.stats["processed"])
